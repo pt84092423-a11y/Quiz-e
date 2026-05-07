@@ -1,166 +1,251 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Trophy, RotateCcw, List, CheckCircle2, XCircle, Info } from 'lucide-react';
 import { AnswerRecord } from '../hooks/useQuiz';
+import { saveScore } from '../lib/leaderboard';
 
 interface ResultsScreenProps {
   score: number;
   answers: AnswerRecord[];
   onRetry: () => void;
+  onLeaderboard: () => void;
 }
 
-export default function ResultsScreen({ score, answers, onRetry }: ResultsScreenProps) {
+export default function ResultsScreen({ score, answers, onRetry, onLeaderboard }: ResultsScreenProps) {
   const [selectedAnswer, setSelectedAnswer] = useState<AnswerRecord | null>(null);
 
   const totalQuestions = answers.length;
   const correctCount = answers.filter(a => a.isCorrect).length;
-  const percentage = (correctCount / totalQuestions) * 100;
+  const percentage = Math.round((correctCount / totalQuestions) * 100);
 
-  let rating = "Cần cố gắng";
-  let ratingColor = "text-destructive";
+  let rating = 'Cần cố gắng';
+  let ratingColor = 'text-red-400';
+  let ratingBg = 'from-red-500/20 to-red-500/5';
   if (percentage >= 80) {
-    rating = "Xuất sắc!";
-    ratingColor = "text-primary";
+    rating = 'Xuất sắc!';
+    ratingColor = 'text-transparent bg-clip-text bg-gradient-to-r from-primary to-cyan-300';
+    ratingBg = 'from-primary/20 to-secondary/10';
   } else if (percentage >= 60) {
-    rating = "Khá";
-    ratingColor = "text-green-400";
+    rating = 'Khá tốt';
+    ratingColor = 'text-emerald-400';
+    ratingBg = 'from-emerald-500/20 to-emerald-500/5';
   } else if (percentage >= 40) {
-    rating = "Trung bình";
-    ratingColor = "text-yellow-400";
+    rating = 'Trung bình';
+    ratingColor = 'text-yellow-400';
+    ratingBg = 'from-yellow-500/20 to-yellow-500/5';
   }
 
+  // Save to leaderboard once
+  useEffect(() => {
+    saveScore(score, correctCount, totalQuestions);
+  }, []);
+
   return (
-    <div className="min-h-[100dvh] w-full bg-background p-4 md:p-8 flex flex-col relative overflow-hidden">
-      <div className="fixed inset-0 z-0 opacity-30 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-primary/20 blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-secondary/20 blur-[120px]" />
+    <div className="min-h-[100dvh] w-full bg-background flex flex-col relative overflow-hidden">
+      {/* Ambient */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute top-[-15%] left-[-10%] w-[60%] h-[60%] rounded-full bg-primary/8 blur-[120px]" />
+        <div className="absolute bottom-[-15%] right-[-10%] w-[60%] h-[60%] rounded-full bg-secondary/10 blur-[120px]" />
       </div>
 
-      <div className="relative z-10 max-w-5xl mx-auto w-full flex-1 flex flex-col">
-        
-        {/* Header Stats */}
-        <motion.div 
+      <div className="relative z-10 max-w-5xl mx-auto w-full flex-1 flex flex-col gap-5 p-4 md:p-8">
+
+        {/* Score hero */}
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="glass-panel rounded-3xl p-8 border border-white/10 mb-8 flex flex-col md:flex-row items-center justify-between gap-8"
+          className={`glass-strong rounded-3xl p-6 md:p-8 bg-gradient-to-br ${ratingBg} border border-white/10`}
         >
-          <div className="text-center md:text-left">
-            <h1 className="text-3xl font-bold mb-2">Kết quả Quiz</h1>
-            <p className={`text-2xl font-black uppercase tracking-wider ${ratingColor}`}>{rating}</p>
-          </div>
-          
-          <div className="flex items-center gap-8">
-            <div className="flex flex-col items-center">
-              <span className="text-sm text-muted-foreground uppercase tracking-wider font-semibold mb-1">Tổng điểm</span>
-              <span className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">{score}</span>
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            {/* Left: rating + score */}
+            <div className="text-center md:text-left">
+              <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold mb-1">Kết quả</p>
+              <h1 className={`text-3xl md:text-4xl font-black mb-3 ${ratingColor}`}>{rating}</h1>
+              <div className="flex items-baseline gap-2">
+                <span className="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary tabular-nums">
+                  {score.toLocaleString()}
+                </span>
+                <span className="text-muted-foreground font-semibold">điểm</span>
+              </div>
             </div>
-            <div className="w-px h-16 bg-white/10" />
-            <div className="flex flex-col items-center">
-              <span className="text-sm text-muted-foreground uppercase tracking-wider font-semibold mb-1">Chính xác</span>
-              <span className="text-4xl font-bold text-foreground">{correctCount}<span className="text-xl text-muted-foreground">/{totalQuestions}</span></span>
+
+            {/* Center: stats */}
+            <div className="flex items-center gap-5 md:gap-8">
+              <div className="flex flex-col items-center">
+                <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-1">Đúng</span>
+                <span className="text-3xl font-black text-emerald-400 tabular-nums">{correctCount}</span>
+              </div>
+              <div className="w-px h-12 bg-white/10" />
+              <div className="flex flex-col items-center">
+                <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-1">Sai</span>
+                <span className="text-3xl font-black text-red-400 tabular-nums">{totalQuestions - correctCount}</span>
+              </div>
+              <div className="w-px h-12 bg-white/10" />
+              <div className="flex flex-col items-center">
+                <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-1">Tỉ lệ</span>
+                <span className="text-3xl font-black text-foreground tabular-nums">{percentage}%</span>
+              </div>
+            </div>
+
+            {/* Right: actions */}
+            <div className="flex flex-col gap-3 w-full md:w-auto">
+              <motion.button
+                data-testid="button-retry"
+                onClick={onRetry}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                className="flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-black text-background bg-gradient-to-r from-primary to-cyan-300 shadow-[0_0_24px_rgba(0,229,255,0.3)] hover:brightness-110 transition-all"
+              >
+                <RotateCcw className="w-4 h-4" />
+                Làm lại
+              </motion.button>
+              <motion.button
+                data-testid="button-view-leaderboard"
+                onClick={onLeaderboard}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                className="flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold glass-panel border-white/15 hover:bg-white/10 transition-all"
+              >
+                <Trophy className="w-4 h-4 text-yellow-400" />
+                Bảng xếp hạng
+              </motion.button>
             </div>
           </div>
 
-          <button 
-            onClick={onRetry}
-            className="w-full md:w-auto px-8 py-4 rounded-xl font-bold text-white bg-white/10 hover:bg-white/20 border border-white/20 transition-all"
-          >
-            Làm lại Quiz
-          </button>
+          {/* Progress bar */}
+          <div className="mt-6 h-2 rounded-full bg-white/8 overflow-hidden">
+            <motion.div
+              className="h-full rounded-full bg-gradient-to-r from-primary to-secondary"
+              initial={{ width: 0 }}
+              animate={{ width: `${percentage}%` }}
+              transition={{ delay: 0.4, duration: 0.8, ease: 'easeOut' }}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground mt-2 text-center">
+            Điểm đã được lưu vào bảng xếp hạng
+          </p>
         </motion.div>
 
-        {/* Review Grid */}
-        <div className="flex-1 flex flex-col md:flex-row gap-8">
-          <div className="w-full md:w-1/3">
-            <h3 className="text-lg font-semibold mb-4 text-white/80">Chi tiết các câu hỏi</h3>
-            <div className="grid grid-cols-5 sm:grid-cols-7 md:grid-cols-5 lg:grid-cols-6 gap-2">
+        {/* Review section */}
+        <div className="flex-1 flex flex-col md:flex-row gap-5">
+          {/* Grid */}
+          <div className="w-full md:w-[280px] shrink-0">
+            <div className="flex items-center gap-2 mb-3">
+              <List className="w-4 h-4 text-muted-foreground" />
+              <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Chi tiết các câu</h3>
+            </div>
+            <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-5 lg:grid-cols-6 gap-2">
               {answers.map((ans, idx) => {
                 const isSelected = selectedAnswer?.questionId === ans.questionId;
-                let bgClass = ans.selectedAnswer === null ? "bg-muted text-muted-foreground" : 
-                              ans.isCorrect ? "bg-green-500/20 text-green-400 border-green-500/50" : 
-                              "bg-destructive/20 text-red-400 border-destructive/50";
+                let cls =
+                  ans.selectedAnswer === null
+                    ? 'bg-white/8 text-muted-foreground border-white/10'
+                    : ans.isCorrect
+                    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
+                    : 'bg-red-500/20 text-red-400 border-red-500/40';
 
                 return (
-                  <button
+                  <motion.button
                     key={ans.questionId}
+                    data-testid={`button-review-${idx + 1}`}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: idx * 0.02 }}
+                    whileHover={{ scale: 1.12 }}
+                    whileTap={{ scale: 0.92 }}
                     onClick={() => setSelectedAnswer(ans)}
-                    className={`aspect-square rounded-lg flex items-center justify-center font-bold border transition-all hover:scale-105 ${bgClass} ${isSelected ? 'ring-2 ring-white ring-offset-2 ring-offset-background' : ''}`}
+                    className={`aspect-square rounded-xl flex items-center justify-center font-black text-sm border transition-all ${cls} ${isSelected ? 'ring-2 ring-white ring-offset-2 ring-offset-background' : ''}`}
                   >
                     {idx + 1}
-                  </button>
-                )
+                  </motion.button>
+                );
               })}
+            </div>
+
+            {/* Legend */}
+            <div className="mt-4 flex flex-wrap gap-3 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded bg-emerald-500/30 border border-emerald-500/40" />Đúng
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded bg-red-500/30 border border-red-500/40" />Sai
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded bg-white/10 border border-white/15" />Bỏ qua
+              </span>
             </div>
           </div>
 
-          {/* Details Panel */}
-          <div className="w-full md:w-2/3">
+          {/* Detail panel */}
+          <div className="flex-1 min-h-[300px]">
             <AnimatePresence mode="wait">
               {selectedAnswer ? (
                 <motion.div
                   key={selectedAnswer.questionId}
-                  initial={{ opacity: 0, x: 20 }}
+                  initial={{ opacity: 0, x: 16 }}
                   animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="glass-panel border border-white/10 rounded-3xl p-6 md:p-8 h-full flex flex-col"
+                  exit={{ opacity: 0, x: -16 }}
+                  className="glass-strong rounded-3xl p-6 md:p-8 h-full flex flex-col border border-white/10"
                 >
-                  <div className="mb-6">
-                    <span className="inline-block px-3 py-1 rounded-full bg-white/10 text-xs font-semibold uppercase tracking-wider mb-4">
+                  <div className="mb-5">
+                    <span className="inline-block px-3 py-1 rounded-full glass border border-white/10 text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">
                       Câu {answers.findIndex(a => a.questionId === selectedAnswer.questionId) + 1}
                     </span>
-                    <h3 className="text-xl font-bold leading-relaxed">{selectedAnswer.question.question}</h3>
+                    <p className="text-lg md:text-xl font-bold leading-relaxed">{selectedAnswer.question.question}</p>
                   </div>
 
-                  <div className="space-y-3 mb-8">
+                  <div className="space-y-2.5 mb-5">
                     {selectedAnswer.question.options.map((opt, i) => {
-                      const isUserChoice = opt === selectedAnswer.selectedAnswer;
-                      const isCorrectChoice = opt === selectedAnswer.question.correctAnswer;
-                      
-                      let rowClass = "bg-white/5 border-white/5";
+                      const isUser = opt === selectedAnswer.selectedAnswer;
+                      const isCorrectOpt = opt === selectedAnswer.question.correctAnswer;
+
+                      let row = 'bg-white/4 border-white/8 text-muted-foreground';
                       let icon = null;
 
-                      if (isCorrectChoice) {
-                        rowClass = "bg-green-500/20 border-green-500/50 text-green-100";
-                        icon = <svg className="w-5 h-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>;
-                      } else if (isUserChoice && !isCorrectChoice) {
-                        rowClass = "bg-destructive/20 border-destructive/50 text-red-100";
-                        icon = <svg className="w-5 h-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>;
+                      if (isCorrectOpt) {
+                        row = 'bg-emerald-500/15 border-emerald-500/40 text-emerald-100';
+                        icon = <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />;
+                      } else if (isUser && !isCorrectOpt) {
+                        row = 'bg-red-500/15 border-red-500/40 text-red-100';
+                        icon = <XCircle className="w-5 h-5 text-red-400 shrink-0" />;
                       }
 
                       return (
-                        <div key={i} className={`p-4 rounded-xl border flex items-center justify-between ${rowClass}`}>
-                          <span className="font-medium">{opt}</span>
-                          {icon && <span>{icon}</span>}
+                        <div key={i} className={`flex items-center justify-between gap-3 p-3.5 rounded-xl border transition-all ${row}`}>
+                          <span className="font-medium text-sm md:text-base leading-snug">{opt}</span>
+                          {icon}
                         </div>
-                      )
+                      );
                     })}
-                    
                     {selectedAnswer.selectedAnswer === null && (
-                      <div className="p-4 rounded-xl border bg-muted/50 border-white/10 text-muted-foreground text-center font-medium">
-                        Bạn đã không trả lời câu hỏi này (Hết giờ)
+                      <div className="p-4 rounded-xl border border-white/10 bg-white/5 text-muted-foreground text-center text-sm font-medium">
+                        Bạn chưa trả lời câu này (Hết giờ)
                       </div>
                     )}
                   </div>
 
-                  <div className="mt-auto p-4 rounded-xl bg-primary/10 border border-primary/20">
-                    <h4 className="text-primary font-bold mb-2 flex items-center gap-2">
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                      Giải thích
-                    </h4>
-                    <p className="text-sm text-primary-100 leading-relaxed">{selectedAnswer.question.explanation}</p>
+                  <div className="mt-auto p-4 rounded-2xl bg-primary/10 border border-primary/20 flex gap-3">
+                    <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-primary font-bold text-sm mb-1">Giải thích</p>
+                      <p className="text-sm text-foreground/80 leading-relaxed">{selectedAnswer.question.explanation}</p>
+                    </div>
                   </div>
                 </motion.div>
               ) : (
-                <div className="glass-panel border border-white/5 rounded-3xl p-8 h-full flex flex-col items-center justify-center text-muted-foreground text-center">
-                  <svg className="w-16 h-16 mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
-                  </svg>
-                  <p className="text-lg">Chọn một câu hỏi bên trái<br/>để xem chi tiết đáp án và giải thích.</p>
-                </div>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="glass-panel rounded-3xl p-8 h-full flex flex-col items-center justify-center text-center text-muted-foreground border border-white/8"
+                >
+                  <List className="w-14 h-14 mb-4 opacity-25" />
+                  <p className="text-base font-semibold">Chọn một ô bên trái</p>
+                  <p className="text-sm mt-1 opacity-70">để xem đáp án và giải thích chi tiết</p>
+                </motion.div>
               )}
             </AnimatePresence>
           </div>
         </div>
-
       </div>
     </div>
   );
