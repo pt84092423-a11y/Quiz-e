@@ -1,0 +1,44 @@
+Role: Senior Fullstack Developer & UI/UX Expert.
+Task: Xây dựng một ứng dụng Web Quiz cao cấp, sinh động, chống gian lận và hỗ trợ học tập chuyên sâu.
+1. CORE LOGIC (LẬP TRÌNH THÔNG MINH)
+•	Shuffling (Xáo trộn): * Sử dụng thuật toán Fisher-Yates để xáo trộn danh sách câu hỏi mỗi khi bắt đầu.
+o	Xáo trộn đáp án: Trong mỗi câu hỏi, thứ tự các đáp án (A, B, C, D) phải được đảo ngẫu nhiên nhưng vẫn phải giữ đúng logic đáp án đúng (Sử dụng ID hoặc lưu giá trị text đáp án đúng để so khớp).
+•	Hệ thống đếm thời gian (Timer):
+o	Per-question Timer: Mỗi câu có 15-30 giây để trả lời.
+o	Visual Timer: Một vòng tròn tiến trình (Circular Progress) bao quanh Avatar người dùng, đổi màu từ Xanh -> Vàng -> Đỏ khi thời gian sắp hết.
+o	Time-out Logic: Nếu hết thời gian mà chưa chọn, câu đó được tính là Sai và tự động chuyển sang phần Giải thích/Câu tiếp theo.
+2. TÍNH NĂNG XEM LẠI & ĐIỂM SỐ (POST-GAME)
+•	Điểm số: Tính dựa trên (Số câu đúng * 100) + (Thời gian còn dư * hệ số).
+•	Review Mode (Siêu chi tiết): * Hiển thị danh sách câu hỏi dưới dạng lưới ô vuông (Xanh = Đúng, Đỏ = Sai, Xám = Bỏ qua).
+o	Khi nhấn vào mỗi câu, hiện bảng so sánh: "Đáp án của bạn" vs "Đáp án đúng".
+o	Hiện phần explanation ngay bên dưới để người dùng hiểu tại sao mình sai.
+3. GIAO DIỆN & HIỆU ỨNG (UI/UX)
+•	Phong cách: Dark Mode, Glassmorphism (Kính mờ), bo góc mềm mại.
+•	Đồ họa sinh động: * Dùng Framer Motion cho hiệu ứng chuyển câu (Slide & Fade).
+o	Dùng canvas-confetti bắn pháo hoa khi trả lời đúng chuỗi (Streak) 5 câu liên tiếp.
+o	Âm thanh: Hiệu ứng tích tắc của đồng hồ khi còn 3 giây cuối.
+4. KỸ THUẬT YÊU CẦU
+•	Tech Stack: React.js, Tailwind CSS, Lucide Icons (cho biểu tượng).
+•	Data: Nhận dữ liệu từ một biến const quizData (JSON) chứa các loại câu hỏi: multiple_choice và true_false.
+5. BỘ DỮ LIỆU MẪU (Dựa trên ảnh của bạn)
+JSON
+[
+  {
+    "id": "q1",
+    "type": "multiple_choice",
+    "question": "Công nghiệp điện tử - tin học là ngành cần:",
+    "options": ["Nhiều diện tích rộng", "Nhiều kim loại, điện", "Lao động trình độ cao", "Nhiều nguyên liệu thô"],
+    "correctAnswer": "Lao động trình độ cao",
+    "explanation": "Vì ngành này đòi hỏi hàm lượng tri thức và kỹ thuật rất cao."
+  },
+  {
+    "id": "q2",
+    "type": "true_false",
+    "question": "Than có vai trò quan trọng, làm nhiên liệu cho nhà máy luyện kim.",
+    "options": ["Đúng", "Sai"],
+    "correctAnswer": "Đúng",
+    "explanation": "Văn bản nêu rõ than là nhiên liệu cho nhiệt điện và luyện kim."
+  }
+]
+________________________________________
+
