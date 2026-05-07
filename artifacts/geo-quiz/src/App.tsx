@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-
+import { ThemeProvider } from "./contexts/ThemeContext";
+import ThemeBackground from "./components/ThemeBackground";
 import { useQuiz } from "./hooks/useQuiz";
 import StartScreen from "./pages/StartScreen";
 import QuizScreen from "./pages/QuizScreen";
@@ -10,7 +11,7 @@ import LeaderboardScreen from "./pages/LeaderboardScreen";
 
 type NavView = 'start' | 'leaderboard';
 
-function App() {
+function AppInner() {
   const [navView, setNavView] = useState<NavView>('start');
   const [playerName, setPlayerName] = useState('');
 
@@ -43,48 +44,48 @@ function App() {
     setNavView('start');
   };
 
-  if (navView === 'leaderboard') {
-    return (
-      <TooltipProvider>
-        <LeaderboardScreen
-          onBack={() => setNavView('start')}
-          highlightName={playerName || undefined}
-        />
-        <Toaster />
-      </TooltipProvider>
-    );
-  }
-
   return (
     <TooltipProvider>
-      <main className="w-full min-h-[100dvh] bg-background text-foreground selection:bg-primary/30">
-        {gameState === 'start' && (
-          <StartScreen
-            onStart={handleStart}
-            onLeaderboard={() => setNavView('leaderboard')}
+      {/* Shared animated background layer */}
+      <ThemeBackground />
+
+      <main className="relative z-10 w-full min-h-[100dvh] bg-background/60 text-foreground selection:bg-primary/30">
+        {navView === 'leaderboard' ? (
+          <LeaderboardScreen
+            onBack={() => setNavView('start')}
+            highlightName={playerName || undefined}
           />
-        )}
-        {gameState === 'playing' && currentQuestion && (
-          <QuizScreen
-            currentQuestion={currentQuestion}
-            currentIndex={currentIndex}
-            totalQuestions={totalQuestions}
-            timeRemaining={timeRemaining}
-            score={score}
-            streak={streak}
-            handleAnswer={handleAnswer}
-            isAnswering={isAnswering}
-            selectedAnswer={null}
-          />
-        )}
-        {gameState === 'results' && (
-          <ResultsScreen
-            score={score}
-            answers={answers}
-            playerName={playerName}
-            onRetry={handleRetry}
-            onLeaderboard={() => setNavView('leaderboard')}
-          />
+        ) : (
+          <>
+            {gameState === 'start' && (
+              <StartScreen
+                onStart={handleStart}
+                onLeaderboard={() => setNavView('leaderboard')}
+              />
+            )}
+            {gameState === 'playing' && currentQuestion && (
+              <QuizScreen
+                currentQuestion={currentQuestion}
+                currentIndex={currentIndex}
+                totalQuestions={totalQuestions}
+                timeRemaining={timeRemaining}
+                score={score}
+                streak={streak}
+                handleAnswer={handleAnswer}
+                isAnswering={isAnswering}
+                selectedAnswer={null}
+              />
+            )}
+            {gameState === 'results' && (
+              <ResultsScreen
+                score={score}
+                answers={answers}
+                playerName={playerName}
+                onRetry={handleRetry}
+                onLeaderboard={() => setNavView('leaderboard')}
+              />
+            )}
+          </>
         )}
       </main>
       <Toaster />
@@ -92,4 +93,10 @@ function App() {
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <ThemeProvider>
+      <AppInner />
+    </ThemeProvider>
+  );
+}
