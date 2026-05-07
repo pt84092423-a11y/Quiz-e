@@ -8,3 +8,27 @@
 export interface HealthStatus {
   status: string;
 }
+
+export interface LeaderboardEntry {
+  id: number;
+  playerName: string;
+  score: number;
+  correct: number;
+  total: number;
+  createdAt: string;
+}
+
+export interface SubmitScoreBody {
+  playerName: string;
+  score: number;
+  correct: number;
+  total: number;
+}
+
+export interface ErrorResponse {
+  error: string;
+}
+
+export type GetLeaderboardParams = {
+  limit?: number;
+};

@@ -1,22 +1,25 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, RotateCcw, List, CheckCircle2, XCircle, Info } from 'lucide-react';
+import { Trophy, RotateCcw, List, CheckCircle2, XCircle, Info, Loader2 } from 'lucide-react';
 import { AnswerRecord } from '../hooks/useQuiz';
-import { saveScore } from '../lib/leaderboard';
+import { useSubmitScore } from '@workspace/api-client-react';
 
 interface ResultsScreenProps {
   score: number;
   answers: AnswerRecord[];
+  playerName: string;
   onRetry: () => void;
   onLeaderboard: () => void;
 }
 
-export default function ResultsScreen({ score, answers, onRetry, onLeaderboard }: ResultsScreenProps) {
+export default function ResultsScreen({ score, answers, playerName, onRetry, onLeaderboard }: ResultsScreenProps) {
   const [selectedAnswer, setSelectedAnswer] = useState<AnswerRecord | null>(null);
 
   const totalQuestions = answers.length;
   const correctCount = answers.filter(a => a.isCorrect).length;
   const percentage = Math.round((correctCount / totalQuestions) * 100);
+
+  const submitScore = useSubmitScore();
 
   let rating = 'Cần cố gắng';
   let ratingColor = 'text-red-400';
@@ -35,14 +38,22 @@ export default function ResultsScreen({ score, answers, onRetry, onLeaderboard }
     ratingBg = 'from-yellow-500/20 to-yellow-500/5';
   }
 
-  // Save to leaderboard once
   useEffect(() => {
-    saveScore(score, correctCount, totalQuestions);
+    submitScore.mutate({
+      data: { playerName, score, correct: correctCount, total: totalQuestions },
+    });
   }, []);
+
+  const saveStatus = submitScore.isPending
+    ? 'Đang lưu điểm...'
+    : submitScore.isSuccess
+    ? 'Đã lưu vào bảng xếp hạng!'
+    : submitScore.isError
+    ? 'Không thể lưu điểm (mạng lỗi)'
+    : '';
 
   return (
     <div className="min-h-[100dvh] w-full bg-background flex flex-col relative overflow-hidden">
-      {/* Ambient */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute top-[-15%] left-[-10%] w-[60%] h-[60%] rounded-full bg-primary/8 blur-[120px]" />
         <div className="absolute bottom-[-15%] right-[-10%] w-[60%] h-[60%] rounded-full bg-secondary/10 blur-[120px]" />
@@ -57,9 +68,10 @@ export default function ResultsScreen({ score, answers, onRetry, onLeaderboard }
           className={`glass-strong rounded-3xl p-6 md:p-8 bg-gradient-to-br ${ratingBg} border border-white/10`}
         >
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            {/* Left: rating + score */}
             <div className="text-center md:text-left">
-              <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold mb-1">Kết quả</p>
+              <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold mb-1">
+                Kết quả của <span className="text-foreground font-bold">{playerName}</span>
+              </p>
               <h1 className={`text-3xl md:text-4xl font-black mb-3 ${ratingColor}`}>{rating}</h1>
               <div className="flex items-baseline gap-2">
                 <span className="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary tabular-nums">
@@ -69,7 +81,6 @@ export default function ResultsScreen({ score, answers, onRetry, onLeaderboard }
               </div>
             </div>
 
-            {/* Center: stats */}
             <div className="flex items-center gap-5 md:gap-8">
               <div className="flex flex-col items-center">
                 <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-1">Đúng</span>
@@ -87,7 +98,6 @@ export default function ResultsScreen({ score, answers, onRetry, onLeaderboard }
               </div>
             </div>
 
-            {/* Right: actions */}
             <div className="flex flex-col gap-3 w-full md:w-auto">
               <motion.button
                 data-testid="button-retry"
@@ -112,7 +122,6 @@ export default function ResultsScreen({ score, answers, onRetry, onLeaderboard }
             </div>
           </div>
 
-          {/* Progress bar */}
           <div className="mt-6 h-2 rounded-full bg-white/8 overflow-hidden">
             <motion.div
               className="h-full rounded-full bg-gradient-to-r from-primary to-secondary"
@@ -121,14 +130,15 @@ export default function ResultsScreen({ score, answers, onRetry, onLeaderboard }
               transition={{ delay: 0.4, duration: 0.8, ease: 'easeOut' }}
             />
           </div>
-          <p className="text-xs text-muted-foreground mt-2 text-center">
-            Điểm đã được lưu vào bảng xếp hạng
-          </p>
+          <div className="mt-2 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+            {submitScore.isPending && <Loader2 className="w-3 h-3 animate-spin" />}
+            {submitScore.isSuccess && <CheckCircle2 className="w-3 h-3 text-emerald-400" />}
+            <span>{saveStatus}</span>
+          </div>
         </motion.div>
 
         {/* Review section */}
         <div className="flex-1 flex flex-col md:flex-row gap-5">
-          {/* Grid */}
           <div className="w-full md:w-[280px] shrink-0">
             <div className="flex items-center gap-2 mb-3">
               <List className="w-4 h-4 text-muted-foreground" />
@@ -137,13 +147,12 @@ export default function ResultsScreen({ score, answers, onRetry, onLeaderboard }
             <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-5 lg:grid-cols-6 gap-2">
               {answers.map((ans, idx) => {
                 const isSelected = selectedAnswer?.questionId === ans.questionId;
-                let cls =
+                const cls =
                   ans.selectedAnswer === null
                     ? 'bg-white/8 text-muted-foreground border-white/10'
                     : ans.isCorrect
                     ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
                     : 'bg-red-500/20 text-red-400 border-red-500/40';
-
                 return (
                   <motion.button
                     key={ans.questionId}
@@ -161,22 +170,13 @@ export default function ResultsScreen({ score, answers, onRetry, onLeaderboard }
                 );
               })}
             </div>
-
-            {/* Legend */}
             <div className="mt-4 flex flex-wrap gap-3 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded bg-emerald-500/30 border border-emerald-500/40" />Đúng
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded bg-red-500/30 border border-red-500/40" />Sai
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded bg-white/10 border border-white/15" />Bỏ qua
-              </span>
+              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-emerald-500/30 border border-emerald-500/40" />Đúng</span>
+              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-red-500/30 border border-red-500/40" />Sai</span>
+              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-white/10 border border-white/15" />Bỏ qua</span>
             </div>
           </div>
 
-          {/* Detail panel */}
           <div className="flex-1 min-h-[300px]">
             <AnimatePresence mode="wait">
               {selectedAnswer ? (
@@ -198,10 +198,8 @@ export default function ResultsScreen({ score, answers, onRetry, onLeaderboard }
                     {selectedAnswer.question.options.map((opt, i) => {
                       const isUser = opt === selectedAnswer.selectedAnswer;
                       const isCorrectOpt = opt === selectedAnswer.question.correctAnswer;
-
                       let row = 'bg-white/4 border-white/8 text-muted-foreground';
                       let icon = null;
-
                       if (isCorrectOpt) {
                         row = 'bg-emerald-500/15 border-emerald-500/40 text-emerald-100';
                         icon = <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />;
@@ -209,7 +207,6 @@ export default function ResultsScreen({ score, answers, onRetry, onLeaderboard }
                         row = 'bg-red-500/15 border-red-500/40 text-red-100';
                         icon = <XCircle className="w-5 h-5 text-red-400 shrink-0" />;
                       }
-
                       return (
                         <div key={i} className={`flex items-center justify-between gap-3 p-3.5 rounded-xl border transition-all ${row}`}>
                           <span className="font-medium text-sm md:text-base leading-snug">{opt}</span>

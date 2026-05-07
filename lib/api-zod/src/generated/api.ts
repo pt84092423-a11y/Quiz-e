@@ -14,3 +14,34 @@ import * as zod from "zod";
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
+
+/**
+ * Returns top scores across all players, sorted by score descending
+ * @summary Get global leaderboard
+ */
+export const getLeaderboardQueryLimitDefault = 20;
+
+export const GetLeaderboardQueryParams = zod.object({
+  limit: zod.coerce.number().default(getLeaderboardQueryLimitDefault),
+});
+
+export const GetLeaderboardResponseItem = zod.object({
+  id: zod.number(),
+  playerName: zod.string(),
+  score: zod.number(),
+  correct: zod.number(),
+  total: zod.number(),
+  createdAt: zod.string(),
+});
+export const GetLeaderboardResponse = zod.array(GetLeaderboardResponseItem);
+
+/**
+ * Saves a player's score to the global leaderboard
+ * @summary Submit a quiz score
+ */
+export const SubmitScoreBody = zod.object({
+  playerName: zod.string(),
+  score: zod.number(),
+  correct: zod.number(),
+  total: zod.number(),
+});

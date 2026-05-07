@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: leaderboard
+    description: Quiz leaderboard operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,55 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /leaderboard:
+    get:
+      operationId: getLeaderboard
+      tags: [leaderboard]
+      summary: Get global leaderboard
+      description: Returns top scores across all players, sorted by score descending
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Leaderboard entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LeaderboardEntry"
+
+    post:
+      operationId: submitScore
+      tags: [leaderboard]
+      summary: Submit a quiz score
+      description: Saves a player's score to the global leaderboard
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmitScoreBody"
+      responses:
+        "201":
+          description: Score saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeaderboardEntry"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +85,50 @@ components:
       required:
         - status
 
+    LeaderboardEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        playerName:
+          type: string
+        score:
+          type: integer
+        correct:
+          type: integer
+        total:
+          type: integer
+        createdAt:
+          type: string
+      required:
+        - id
+        - playerName
+        - score
+        - correct
+        - total
+        - createdAt
+
+    SubmitScoreBody:
+      type: object
+      properties:
+        playerName:
+          type: string
+        score:
+          type: integer
+        correct:
+          type: integer
+        total:
+          type: integer
+      required:
+        - playerName
+        - score
+        - correct
+        - total
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error

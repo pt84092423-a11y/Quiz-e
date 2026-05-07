@@ -12,6 +12,7 @@ type NavView = 'start' | 'leaderboard';
 
 function App() {
   const [navView, setNavView] = useState<NavView>('start');
+  const [playerName, setPlayerName] = useState('');
 
   useEffect(() => {
     document.documentElement.classList.add('dark');
@@ -31,16 +32,24 @@ function App() {
     answers,
   } = useQuiz();
 
-  const handleStart = () => {
+  const handleStart = (name: string) => {
+    setPlayerName(name);
     startQuiz();
     setNavView('start');
   };
 
-  // Derive final view
+  const handleRetry = () => {
+    startQuiz();
+    setNavView('start');
+  };
+
   if (navView === 'leaderboard') {
     return (
       <TooltipProvider>
-        <LeaderboardScreen onBack={() => setNavView('start')} />
+        <LeaderboardScreen
+          onBack={() => setNavView('start')}
+          highlightName={playerName || undefined}
+        />
         <Toaster />
       </TooltipProvider>
     );
@@ -72,7 +81,8 @@ function App() {
           <ResultsScreen
             score={score}
             answers={answers}
-            onRetry={handleStart}
+            playerName={playerName}
+            onRetry={handleRetry}
             onLeaderboard={() => setNavView('leaderboard')}
           />
         )}
