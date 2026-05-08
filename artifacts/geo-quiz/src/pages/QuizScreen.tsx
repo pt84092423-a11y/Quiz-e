@@ -4,6 +4,80 @@ import { Flame, Star } from 'lucide-react';
 import { Question } from '../hooks/useQuiz';
 import { useTheme } from '../contexts/ThemeContext';
 
+function isCodeLine(line: string): boolean {
+  return /^(\s+\S|def |for |if |return |print\(|n=|A=|B=|s =|s=|x=|\d+[:\.]|while |import |#)/.test(line);
+}
+
+type QuestionPart =
+  | { type: 'text'; content: string }
+  | { type: 'code'; content: string }
+  | { type: 'statement'; content: string };
+
+function parseQuestion(text: string): QuestionPart[] {
+  const tfIdx = text.indexOf('\n\nPhát biểu:');
+  if (tfIdx !== -1) {
+    const codeSection = text.slice(0, tfIdx);
+    const statement = text.slice(tfIdx + 2);
+    const nlIdx = codeSection.indexOf('\n');
+    const intro = nlIdx !== -1 ? codeSection.slice(0, nlIdx) : codeSection;
+    const code = nlIdx !== -1 ? codeSection.slice(nlIdx + 1) : '';
+    const parts: QuestionPart[] = [{ type: 'text', content: intro }];
+    if (code) parts.push({ type: 'code', content: code });
+    parts.push({ type: 'statement', content: statement });
+    return parts;
+  }
+
+  const lines = text.split('\n');
+  const firstCodeIdx = lines.findIndex((l, i) => i > 0 && isCodeLine(l));
+  if (firstCodeIdx > 0) {
+    const question = lines.slice(0, firstCodeIdx).join('\n');
+    const code = lines.slice(firstCodeIdx).join('\n');
+    return [
+      { type: 'text', content: question },
+      { type: 'code', content: code },
+    ];
+  }
+
+  return [{ type: 'text', content: text }];
+}
+
+function QuestionRenderer({ text }: { text: string }) {
+  const parts = parseQuestion(text);
+  return (
+    <div className="w-full flex flex-col gap-3 text-left">
+      {parts.map((part, i) => {
+        if (part.type === 'code') {
+          return (
+            <div key={i} className="rounded-xl overflow-hidden border border-white/10">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-black/40 border-b border-white/8">
+                <span className="w-2.5 h-2.5 rounded-full bg-red-500/70" />
+                <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" />
+                <span className="w-2.5 h-2.5 rounded-full bg-green-500/70" />
+                <span className="ml-2 text-[10px] text-white/30 font-mono">python</span>
+              </div>
+              <pre className="bg-black/35 px-4 py-3 overflow-x-auto text-sm leading-relaxed">
+                <code className="font-mono text-emerald-300 whitespace-pre">{part.content}</code>
+              </pre>
+            </div>
+          );
+        }
+        if (part.type === 'statement') {
+          return (
+            <p key={i} className="text-base md:text-lg font-bold text-foreground/90 leading-snug pt-1">
+              {part.content}
+            </p>
+          );
+        }
+        return (
+          <p key={i} className="text-lg md:text-xl font-bold leading-snug text-foreground">
+            {part.content}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
+
 interface QuizScreenProps {
   currentQuestion: Question;
   currentIndex: number;
@@ -134,10 +208,8 @@ export default function QuizScreen({
             </div>
 
             {/* Question card */}
-            <div className={`w-full glass-strong rounded-3xl p-6 md:p-8 shadow-2xl ${isNeon ? 'neon-bracket' : ''}`}>
-              <p className="text-xl md:text-2xl font-bold leading-relaxed text-center text-foreground">
-                {currentQuestion.question}
-              </p>
+            <div className={`w-full glass-strong rounded-3xl p-5 md:p-7 shadow-2xl ${isNeon ? 'neon-bracket' : ''}`}>
+              <QuestionRenderer text={currentQuestion.question} />
             </div>
 
             {/* Options */}
