@@ -169,10 +169,10 @@ export default function QuizScreen({
                   <motion.button
                     key={`${currentQuestion.id}-${index}`}
                     data-testid={`button-option-${index}`}
-                    initial={{ opacity: 0, y: 14 }}
+                    initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.07, type: 'spring', stiffness: 300, damping: 28 }}
-                    whileHover={!isAnswering ? { scale: 1.015, y: -2 } : {}}
+                    transition={{ delay: index * 0.04, duration: 0.2 }}
+                    whileHover={!isAnswering ? { scale: 1.015 } : {}}
                     whileTap={!isAnswering ? { scale: 0.985 } : {}}
                     onClick={() => onSelect(option)}
                     disabled={isAnswering}

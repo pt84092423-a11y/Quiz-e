@@ -174,22 +174,22 @@
 @layer utilities {
   .glass {
     background: rgba(255, 255, 255, 0.04);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
   }
   .glass-panel {
     background: rgba(255,255,255,0.04);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
     border: 1px solid rgba(255,255,255,0.08);
     box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
   }
   .glass-strong {
     background: rgba(255,255,255,0.06);
-    backdrop-filter: blur(32px) saturate(200%);
-    -webkit-backdrop-filter: blur(32px) saturate(200%);
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
     border: 1px solid rgba(255,255,255,0.1);
     box-shadow: 0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
   }
@@ -308,8 +308,9 @@
   left: -30%;
   border-radius: 50%;
   mix-blend-mode: screen;
-  filter: blur(55px);
+  filter: blur(35px);
   pointer-events: none;
+  will-change: transform;
 }
 .aurora-1 {
   height: 50vh;
@@ -335,7 +336,7 @@
     transparent 100%
   );
   animation: aurora-drift-2 18s ease-in-out infinite alternate;
-  filter: blur(70px);
+  filter: blur(45px);
 }
 .aurora-3 {
   height: 35vh;
@@ -348,7 +349,7 @@
     transparent 100%
   );
   animation: aurora-drift-3 22s ease-in-out infinite alternate;
-  filter: blur(80px);
+  filter: blur(50px);
 }
 .aurora-4 {
   height: 40vh;
@@ -361,7 +362,7 @@
     transparent 100%
   );
   animation: aurora-drift-4 26s ease-in-out infinite alternate;
-  filter: blur(90px);
+  filter: blur(55px);
 }
 
 /* ═══════════════════════════════════════════

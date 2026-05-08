@@ -63,7 +63,7 @@ export default function StartScreen({ onStart, onLeaderboard }: StartScreenProps
           className={`mb-5 px-5 py-1.5 rounded-full glass text-xs font-bold uppercase tracking-widest glow-primary ${isNeon ? 'border-pink-500/30 text-pink-400' : theme === 'aurora' ? 'border-emerald-500/30 text-emerald-400' : 'border-violet-500/30 text-violet-300'}`}
           style={{ border: '1px solid' }}
         >
-          Địa Lí Lớp 10 — Học Kỳ 2
+          Tin Học Lớp 10 — Cuối Học Kỳ 2
         </motion.div>
 
         {/* Main card */}
@@ -81,10 +81,10 @@ export default function StartScreen({ onStart, onLeaderboard }: StartScreenProps
 
           {/* Title */}
           <h1 className="text-4xl font-black tracking-tight text-center mb-1">
-            <span className="gradient-text glow-text-primary">Quiz Địa Lí</span>
+            <span className="gradient-text glow-text-primary">Quiz Tin Học</span>
           </h1>
           <p className="text-muted-foreground text-sm font-medium tracking-wide text-center mb-6">
-            Ôn thi Cuối Học Kỳ 2
+            Ôn thi Cuối Học Kỳ 2 — Python & Lập Trình
           </p>
 
           {/* Theme picker */}
@@ -99,7 +99,7 @@ export default function StartScreen({ onStart, onLeaderboard }: StartScreenProps
                 {/* Stats */}
                 <div className="flex items-center justify-center gap-6 mb-6 w-full">
                   {[
-                    { icon: <BookOpen className="w-4 h-4" />, value: '37', label: 'câu hỏi' },
+                    { icon: <BookOpen className="w-4 h-4" />, value: '67', label: 'câu hỏi' },
                     { icon: <Clock className="w-4 h-4" />, value: '20s', label: 'mỗi câu' },
                     { icon: <Zap className="w-4 h-4" />, value: '2', label: 'loại câu' },
                   ].map((stat, i) => (
@@ -123,7 +123,7 @@ export default function StartScreen({ onStart, onLeaderboard }: StartScreenProps
                     <span className="text-xs text-muted-foreground flex-1">
                       Dẫn đầu: <span className="text-foreground font-bold">{topScore.playerName}</span>
                     </span>
-                    <span className="text-yellow-400 font-black text-lg tabular-nums">{topScore.score.toLocaleString()}</span>
+                    <span className="text-yellow-400 font-black text-lg tabular-nums">{(topScore.score ?? 0).toLocaleString()}</span>
                   </motion.div>
                 )}
 
